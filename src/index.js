@@ -1,5 +1,7 @@
 import api from "./services/api";
 
+console.log(api);
+
 class TaskList {
   constructor() {
     this.titleInput = document.getElementById("messageTitle");
@@ -12,6 +14,7 @@ class TaskList {
 
     this.scraps = [];
 
+    this.getScraps();
     this.setAddButtonEvent();
   }
 
@@ -52,27 +55,14 @@ class TaskList {
     this.setButtonEvents();
   }
 
-  async addNewScrap() {
+  addNewScrap() {
     let newTitle = this.titleInput.value;
     let newMessage = this.messageInput.value;
 
     this.titleInput.value = "";
     this.messageInput.value = "";
 
-    const {
-      data: { id, title, message },
-    } = await api.post("/scraps", {
-      title: newTitle,
-      message: newMessage,
-    });
-
-    // response
-    // response.data
-    // response.data.id
-    // response.data.title
-    // response.data.message
-
-    this.scraps.push(id, title, message);
+    this.scraps.push({ id, title, message });
 
     this.generateScrap(id, title, message);
   }
@@ -81,12 +71,10 @@ class TaskList {
     this.scrapsField.innerHTML += html;
   }
 
-  async deleteScraps(event) {
+  deleteScraps(event) {
     event.path[2].remove();
 
     const scrapId = event.path[2].getAttribute("id-scrap");
-
-    await api.delete(`/scraps/${scrapId}`);
 
     const scrapIndex = this.scraps.findIndex((scrap) => {
       return scrap.id == scrapId;
@@ -107,17 +95,12 @@ class TaskList {
     this.editTitleInput.value = this.scraps[scrapIndex].title;
     this.editMessageInput.value = this.scraps[scrapIndex].message;
 
-    this.btnSaveEdit.onclick = () => this.saveChanges(scrapIndex, scrapId);
+    this.btnSaveEdit.onclick = () => this.saveChanges(scrapIndex);
   }
 
-  async saveChanges(scrapIndex, scrapId) {
+  saveChanges(scrapIndex) {
     let title = this.editTitleInput.value;
     let message = this.editMessageInput.value;
-
-    await api.put(`/scraps/${scrapId}`, {
-      title,
-      message,
-    });
 
     this.scraps[scrapIndex] = { title, message };
     this.renderScraps();
